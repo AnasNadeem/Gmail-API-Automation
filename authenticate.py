@@ -1,4 +1,8 @@
-# Below is modified snippet to authenticate to the Gmail API using the Google Python Client Library provided by Google. Check it out here https://developers.google.com/gmail/api/quickstart/python. I've modified it according to my usecase.
+'''
+Below is modified snippet to authenticate to the Gmail API using the Google Python Client Library provided by Google.
+Check it out here https://developers.google.com/gmail/api/quickstart/python.
+I've modified it according to my usecase.
+'''
 
 from __future__ import print_function
 
