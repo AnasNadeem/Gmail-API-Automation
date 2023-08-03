@@ -1,0 +1,31 @@
+{
+    "name": "Rule name",
+    "conditional_predicate": "ALL",
+    "conditions": [
+        {
+            "field": "from",
+            "predicate": "equals",
+            "value": "anas"
+        },
+        {
+            "field": "subject",
+            "predicate": "equals",
+            "value": "<value>"
+        },
+        {
+            "field": "date_received",
+            "predicate": "lte/gte/equals",
+            "value": "2"
+        }
+    ],
+    "actions": [
+        {
+            "action": "mark_as",
+            "value": "IMPORTANT"
+        },
+        {
+            "action": "move_to",
+            "value": "INBOX"
+        }
+    ]
+}
