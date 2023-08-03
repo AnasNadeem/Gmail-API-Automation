@@ -42,7 +42,7 @@ class GmailApiUtils:
             print(f'Error occurred in authenticate: {error}')
             return None
 
-    def fetch_emails(self, labelIds=['INBOX', 'IMPORTANT']):
+    def fetch_emails(self, labelIds=[]):
         emails = self.messages.list(userId='me', labelIds=labelIds).execute()
         return emails['messages']
 

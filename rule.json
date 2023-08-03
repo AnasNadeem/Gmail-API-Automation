@@ -5,17 +5,12 @@
         {
             "field": "from",
             "predicate": "equals",
-            "value": "anas"
+            "value": "anas5678go@gmail.com"
         },
         {
             "field": "subject",
             "predicate": "equals",
-            "value": "<value>"
-        },
-        {
-            "field": "date_received",
-            "predicate": "lte/gte/equals",
-            "value": "2"
+            "value": "Test"
         }
     ],
     "actions": [

@@ -40,8 +40,8 @@ class AutomationUtils:
     CONDITION_FIELD_LIST = ['from', 'subject', 'date_received']
     CONDITION_PREDICATE_LIST = ['contains', 'not_contains', 'equals', 'not_equals', 'lte', 'gte']
     PREDICATES_FUNC_MAP = {
-        'contains': lambda value, email_value: value in email_value,
-        'not_contains': lambda value, email_value: value not in email_value,
+        'contains': lambda value, email_value: value.lower() in email_value.lower(),
+        'not_contains': lambda value, email_value: value.lower() not in email_value.lower(),
         'equals': lambda value, email_value: value == email_value,
         'not_equals': lambda value, email_value: value != email_value,
         'lte': lambda value, email_value: value <= email_value,
@@ -81,9 +81,10 @@ class AutomationUtils:
                 break
 
         if not trigger_action:
-            print(f'No action triggered for email: {email["id"]}')
+            print(f'Condition not matched for email: {email["id"]}')
             return
 
+        print(f'Triggering actions for email: {email["id"]}')
         self.trigger_actions(email)
 
     def check_single_condition(self, email, condition):

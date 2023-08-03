@@ -9,9 +9,19 @@ If you're using a new Google Cloud project to complete this quickstart, configur
 
 [Follow these setps](https://developers.google.com/gmail/api/quickstart/python#authorize_credentials_for_a_desktop_application) to generate credentails.
 
-## 4. Setup environment
+## 4 Download the credentials file
+Download the credentials file from Step 3 and save it in the same directory as the project as credentials.json
+
+## 5. Setup environment
 ```py -m venv env```
 
-## 5. Install required packages
+## 6. Install required packages
 ```pip install -r requirements.txt```
 
+## 7. Run the project
+```py main.py```
+
+Also, You can play with the rules in rule.json file to get the desired output.
+
+
+### Enjoy!!!
