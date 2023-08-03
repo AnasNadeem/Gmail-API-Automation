@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from gmail import GmailApiUtils
 
 
@@ -45,8 +45,8 @@ class AutomationUtils:
         'not_contains': lambda value, email_value: value.lower() not in email_value.lower(),
         'equals': lambda value, email_value: value == email_value,
         'not_equals': lambda value, email_value: value != email_value,
-        'lte': lambda value, email_value: datetime.now(timezone.utc).replace(day=value) <= email_value,
-        'gte': lambda value, email_value: datetime.now(timezone.utc).replace(day=value) >= email_value,
+        'lte': lambda value, email_value: datetime.now(timezone.utc) - timedelta(days=value) <= email_value,
+        'gte': lambda value, email_value: datetime.now(timezone.utc) + timedelta(days=value) >= email_value,
     }
     EMAIL_VALUE_MAP = {
         'from': lambda email: email['From'],
@@ -56,8 +56,8 @@ class AutomationUtils:
     }
     ACTION_LIST = ['mark_as', 'move_to']
     ACTION_VALUE_MAP = {
-        'mark_as': lambda gmail, email_id, value: gmail.mark_label(email_id, value),
-        'move_to': lambda gmail, email_id, value: gmail.move_email(email_id, value),
+        'mark_as': lambda gmail, email_id, value: gmail.mark_label_via_api(email_id, value),
+        'move_to': lambda gmail, email_id, value: gmail.move_email_via_api(email_id, value),
     }
 
     def __init__(self, rule):
@@ -113,6 +113,13 @@ class AutomationUtils:
 
         if predicate not in self.CONDITION_PREDICATE_LIST:
             raise Exception(f'Invalid predicate: {predicate}')
+
+        if field == 'date_received':
+            if predicate not in ['lte', 'gte']:
+                raise Exception(f'Invalid predicate for field: {field}')
+
+            if not type(value) in [int, float]:
+                raise Exception(f'Invalid value for field: {field}')
 
     def trigger_actions(self, email):
         for action in self.rule['actions']:

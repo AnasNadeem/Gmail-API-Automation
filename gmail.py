@@ -79,7 +79,10 @@ class GmailApiUtils:
             body = {'removeLabelIds': ['UNREAD']}
         else:
             body = {'addLabelIds': [label]}
-        response = requests.post(modify_url, json=body)
+        response = requests.post(
+            modify_url,
+            json=body,
+            headers={'Authorization': f'Bearer {self.service._http.credentials.token}'})
         response.raise_for_status()
 
     def move_email_via_api(self, email_id, destination):
@@ -90,5 +93,8 @@ class GmailApiUtils:
 
         remove_labels = available_destinations.remove(destination)
         body = {'removeLabelIds': remove_labels, 'addLabelIds': [destination]}
-        response = requests.post(modify_url, json=body)
+        response = requests.post(
+            modify_url,
+            json=body,
+            headers={'Authorization': f'Bearer {self.service._http.credentials.token}'})
         response.raise_for_status()

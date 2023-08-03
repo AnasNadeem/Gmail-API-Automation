@@ -4,19 +4,24 @@
     "conditions": [
         {
             "field": "from",
-            "predicate": "equals",
-            "value": "anas5678go@gmail.com"
+            "predicate": "contains",
+            "value": "itsmeanas"
         },
         {
             "field": "subject",
             "predicate": "contains",
-            "value": "Test"
+            "value": "verify"
+        },
+        {
+            "field": "date_received",
+            "predicate": "lte",
+            "value": 6
         }
     ],
     "actions": [
         {
             "action": "mark_as",
-            "value": "IMPORTANT"
+            "value": "UNREAD"
         },
         {
             "action": "move_to",
