@@ -9,7 +9,7 @@
         },
         {
             "field": "subject",
-            "predicate": "equals",
+            "predicate": "contains",
             "value": "Test"
         }
     ],

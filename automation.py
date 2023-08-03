@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from gmail import GmailApiUtils
 
 
@@ -44,13 +45,14 @@ class AutomationUtils:
         'not_contains': lambda value, email_value: value.lower() not in email_value.lower(),
         'equals': lambda value, email_value: value == email_value,
         'not_equals': lambda value, email_value: value != email_value,
-        'lte': lambda value, email_value: value <= email_value,
-        'gte': lambda value, email_value: value >= email_value,
+        'lte': lambda value, email_value: datetime.now(timezone.utc).replace(day=value) <= email_value,
+        'gte': lambda value, email_value: datetime.now(timezone.utc).replace(day=value) >= email_value,
     }
     EMAIL_VALUE_MAP = {
-        'from': lambda email: email['payload']['headers'][0]['value'],
-        'subject': lambda email: email['snippet'],
-        'date_received': lambda email: email['payload']['headers'][2]['value'],
+        'from': lambda email: email['From'],
+        'to': lambda email: email['To'],
+        'subject': lambda email: email['Subject'],
+        'date_received': lambda email: datetime.strptime(email['Date'], '%a, %d %b %Y %H:%M:%S %z'),  # Twitter Date: Thu, 3 Aug 2023 23:16:08 +0530
     }
     ACTION_LIST = ['mark_as', 'move_to']
     ACTION_VALUE_MAP = {
@@ -66,35 +68,43 @@ class AutomationUtils:
         emails = self.gmail.fetch_emails()
         for email in emails:
             email = self.gmail.get_email(email['id'])
-            self.execute_automation(email)
 
-    def execute_automation(self, email):
+            # Passing email headers as dict to make it easy to access the data we need for now
+            email_headers_dict = {i['name']: i['value'] for i in email['payload']['headers']}
+            self.execute_automation(email, email_headers_dict)
+
+    def execute_automation(self, email, email_headers_dict):
         conditional_predicate = self.rule['conditional_predicate']
         trigger_action = False
         for condition in self.rule['conditions']:
-            is_condition_matched = self.check_single_condition(email, condition)
-            if conditional_predicate == 'ALL' and (not is_condition_matched):
-                break
-
-            elif conditional_predicate == 'ANY' and is_condition_matched:
+            is_condition_matched = self.check_single_condition(email, email_headers_dict, condition)
+            if conditional_predicate == 'ANY':
+                if not is_condition_matched:
+                    continue
                 trigger_action = True
                 break
 
+            if conditional_predicate == 'ALL':
+                if not is_condition_matched:
+                    trigger_action = False
+                    break
+                trigger_action = True
+
         if not trigger_action:
-            print(f'Condition not matched for email: {email["id"]}')
+            print(f'Condition not matched for email: {email["id"]}, subject: {email_headers_dict["Subject"]}')
             return
 
-        print(f'Triggering actions for email: {email["id"]}')
+        print(f'Triggering actions for email: {email["id"]}, subject: {email_headers_dict["Subject"]}')
         self.trigger_actions(email)
 
-    def check_single_condition(self, email, condition):
+    def check_single_condition(self, email, email_headers_dict, condition):
         field = condition['field']
         predicate = condition['predicate']
         value = condition['value']
 
         self.validate_condition(field, predicate, value)
 
-        email_value = self.EMAIL_VALUE_MAP[field](email)
+        email_value = self.EMAIL_VALUE_MAP[field](email_headers_dict)
         return self.PREDICATES_FUNC_MAP[predicate](value, email_value)
 
     def validate_condition(self, field, predicate, value):
