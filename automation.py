@@ -1,4 +1,5 @@
 from datetime import datetime, timezone, timedelta
+from dateutil.parser import parse
 
 
 class AutomationUtils:
@@ -51,7 +52,7 @@ class AutomationUtils:
         'from': lambda email: email['From'],
         'to': lambda email: email['To'],
         'subject': lambda email: email['Subject'],
-        'date_received': lambda email: datetime.strptime(email['Date'], '%a, %d %b %Y %H:%M:%S %z'),  # Twitter Date: Thu, 3 Aug 2023 23:16:08 +0530
+        'date_received': lambda email: parse(email['Date']),
     }
     ACTION_LIST = ['mark_as', 'move_to']
     ACTION_VALUE_MAP = {
@@ -93,8 +94,9 @@ class AutomationUtils:
             print(f'Condition not matched for email: {email["id"]}, subject: {email_headers_dict["Subject"]}')
             return
 
-        print(f'Triggering actions for email: {email["id"]}, subject: {email_headers_dict["Subject"]}')
+        print(f"Condition matched for email: {email['id']}, subject: {email_headers_dict['Subject']} \n Triggering actions")
         self.trigger_actions(email)
+        print(f"Actions triggered for email: {email['id']}, subject: {email_headers_dict['Subject']}")
 
     def check_single_condition(self, email, email_headers_dict, condition):
         field = condition['field']
