@@ -1,5 +1,4 @@
 from datetime import datetime, timezone, timedelta
-from gmail import GmailApiUtils
 
 
 class AutomationUtils:
@@ -60,8 +59,8 @@ class AutomationUtils:
         'move_to': lambda gmail, email_id, value: gmail.move_email_via_api(email_id, value),
     }
 
-    def __init__(self, rule):
-        self.gmail = GmailApiUtils()
+    def __init__(self, gmail, rule):
+        self.gmail = gmail
         self.rule = rule
 
     def process_automation(self):

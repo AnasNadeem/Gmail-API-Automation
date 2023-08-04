@@ -84,6 +84,7 @@ class GmailApiUtils:
             json=body,
             headers={'Authorization': f'Bearer {self.service._http.credentials.token}'})
         response.raise_for_status()
+        return response.json()
 
     def move_email_via_api(self, email_id, destination):
         modify_url = f'https://gmail.googleapis.com/gmail/v1/users/me/messages/{email_id}/modify'
@@ -98,3 +99,4 @@ class GmailApiUtils:
             json=body,
             headers={'Authorization': f'Bearer {self.service._http.credentials.token}'})
         response.raise_for_status()
+        return response.json()
