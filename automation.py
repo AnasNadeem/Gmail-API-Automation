@@ -37,7 +37,7 @@ class AutomationUtils:
             ]
         }
     """
-    CONDITION_FIELD_LIST = ['from', 'subject', 'date_received']
+    CONDITION_FIELD_LIST = ['from', 'to', 'subject', 'date_received']
     CONDITION_PREDICATE_LIST = ['contains', 'not_contains', 'equals', 'not_equals', 'lte', 'gte']
     PREDICATES_FUNC_MAP = {
         'contains': lambda value, email_value: value.lower() in email_value.lower(),

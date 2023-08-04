@@ -1,5 +1,6 @@
 import unittest
 
+from automation import AutomationUtils
 from gmail import GmailApiUtils
 
 
@@ -57,6 +58,51 @@ class GmailApiUtilsTest(unittest.TestCase):
         email = self.gmail.get_email(emails[0]['id'])
         self.assertEqual('SPAM' in email['labelIds'], False)
         self.assertEqual('INBOX' in email['labelIds'], True)
+
+
+class AutomationUtilsTest(unittest.TestCase):
+    def setUp(self):
+        self.gmail = GmailApiUtils()
+        self.rule = {
+            "name": "Rule name",
+            "conditional_predicate": "ALL",
+            "conditions": [
+                {
+                    "field": "from",
+                    "predicate": "contains",
+                    "value": "itsmeanas"
+                },
+                {
+                    "field": "subject",
+                    "predicate": "contains",
+                    "value": "test"
+                },
+                {
+                    "field": "date_received",
+                    "predicate": "lte",
+                    "value": 2
+                }
+            ],
+            "actions": [
+                {
+                    "action": "mark_as",
+                    "value": "IMPORTANT"
+                }
+            ]
+        }
+        self.automation = AutomationUtils(self.gmail, self.rule)
+
+    def test_trigger_action(self):
+        emails = self.gmail.fetch_emails(labelIds=['SPAM'])
+        self.assertTrue(len(emails) > 0)
+
+        email = self.gmail.get_email(emails[0]['id'])
+        self.assertEqual('IMPORTANT' in email['labelIds'], False)
+
+        self.automation.trigger_action(email, self.rule['actions'][0])
+
+        email = self.gmail.get_email(emails[0]['id'])
+        self.assertEqual('IMPORTANT' in email['labelIds'], True)
 
 
 if __name__ == '__main__':
