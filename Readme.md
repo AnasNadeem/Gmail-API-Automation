@@ -15,6 +15,14 @@ Download the credentials file from Step 3 and save it in the same directory as t
 ## 5. Setup environment
 ```py -m venv env```
 
+Activate the environment:
+
+For Windows:
+```.\env\Scripts\activate```
+
+For Linux:
+```source env/bin/activate```
+
 ## 6. Install required packages
 ```pip install -r requirements.txt```
 
