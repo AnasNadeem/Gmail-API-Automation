@@ -1,6 +1,6 @@
 import unittest
 
-from automation import AutomationUtils
+from second_script.automation import AutomationUtils
 from gmail import GmailApiUtils
 
 
