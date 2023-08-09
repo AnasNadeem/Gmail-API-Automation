@@ -1,4 +1,4 @@
 DB_HOST = 'localhost'
-DB_NAME = 'happy'
+DB_NAME = ''
 DB_USER = 'postgres'
-DB_PASS = 'Anas@123'
+DB_PASS = ''
