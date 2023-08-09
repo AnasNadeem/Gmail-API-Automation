@@ -41,6 +41,8 @@ For Linux:
 ├───requirements.txt
 ├───README.md
 ```
+Please update Postgres credentials in constants.py file as per your local setup.
+
 Functions of first_script:
 1. Initialize the gmail api and db
 2. Fetch the emails from the inbox
