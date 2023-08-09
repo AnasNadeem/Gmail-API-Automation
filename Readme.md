@@ -26,10 +26,43 @@ For Linux:
 ## 6. Install required packages
 ```pip install -r requirements.txt```
 
-## 7. Run the project
-```py main.py```
+## 7. Structure of the project
+```bash
+├───first_script
+│   ├───main.py
+├───second_script
+│   ├───automation.py
+│   ├───main.py
+│   ├───rule.json
+├───constants.py
+├───dbutils.py
+├───gmail.py
+├───tests.py
+├───requirements.txt
+├───README.md
+```
+Please update Postgres credentials in constants.py file as per your local setup.
 
-Also, You can play with the rules in rule.json file to get the desired output.
+Functions of first_script:
+1. Initialize the gmail api and db
+2. Fetch the emails from the inbox
+3. Store the emails in the database
+
+
+Functions of second_script:
+1. Initialize the gmail api, db and automation
+2. Fetch the emails from the database
+3. Process the emails based on the rules in rule.json file
+
+
+Helpers/Global files:
+1. constants.py: Contains the constants used in the project
+2. dbutils.py: Contains the functions to interact with the database
+3. gmail.py: Contains the functions to interact with the gmail api
+4. tests.py: Contains the test cases for the project
+
+
+Play with the rules in rule.json file to get the desired output.
 
 
 ### Enjoy!!!

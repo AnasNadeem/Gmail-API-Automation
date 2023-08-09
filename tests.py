@@ -1,6 +1,7 @@
 import unittest
 
-from automation import AutomationUtils
+from second_script.automation import AutomationUtils
+from dbutills import DatabaseUtils
 from gmail import GmailApiUtils
 
 
@@ -90,7 +91,8 @@ class AutomationUtilsTest(unittest.TestCase):
                 }
             ]
         }
-        self.automation = AutomationUtils(self.gmail, self.rule)
+        self.db = DatabaseUtils()
+        self.automation = AutomationUtils(self.gmail, self.rule, self.db)
 
     def test_trigger_action(self):
         emails = self.gmail.fetch_emails(labelIds=['SPAM'])
@@ -99,7 +101,7 @@ class AutomationUtilsTest(unittest.TestCase):
         email = self.gmail.get_email(emails[0]['id'])
         self.assertEqual('IMPORTANT' in email['labelIds'], False)
 
-        self.automation.trigger_action(email, self.rule['actions'][0])
+        self.automation.trigger_action(email['id'], self.rule['actions'][0])
 
         email = self.gmail.get_email(emails[0]['id'])
         self.assertEqual('IMPORTANT' in email['labelIds'], True)

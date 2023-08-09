@@ -1,5 +1,4 @@
-from datetime import datetime, timezone, timedelta
-from dateutil.parser import parse
+from datetime import datetime, timedelta
 
 
 class AutomationUtils:
@@ -45,39 +44,33 @@ class AutomationUtils:
         'not_contains': lambda value, email_value: value.lower() not in email_value.lower(),
         'equals': lambda value, email_value: value == email_value,
         'not_equals': lambda value, email_value: value != email_value,
-        'lte': lambda value, email_value: datetime.now(timezone.utc) - timedelta(days=value) <= email_value,
-        'gte': lambda value, email_value: datetime.now(timezone.utc) + timedelta(days=value) >= email_value,
+        'lte': lambda value, email_value: datetime.now() - timedelta(days=value) <= email_value,
+        'gte': lambda value, email_value: datetime.now() + timedelta(days=value) >= email_value,
     }
-    EMAIL_VALUE_MAP = {
-        'from': lambda email: email['From'],
-        'to': lambda email: email['To'],
-        'subject': lambda email: email['Subject'],
-        'date_received': lambda email: parse(email['Date']),
-    }
+
     ACTION_LIST = ['mark_as', 'move_to']
     ACTION_VALUE_MAP = {
         'mark_as': lambda gmail, email_id, value: gmail.mark_label_via_api(email_id, value),
         'move_to': lambda gmail, email_id, value: gmail.move_email_via_api(email_id, value),
     }
+    # id, gmail_id, subject, from_email, to_email, date_received
+    DB_FIELDS = ['id', 'gmail_id', 'subject', 'from', 'to', 'date_received']
 
-    def __init__(self, gmail, rule):
+    def __init__(self, gmail, rule, db):
         self.gmail = gmail
         self.rule = rule
+        self.db = db
 
-    def process_automation(self):
-        emails = self.gmail.fetch_emails()
+    def process_automation(self, emails):
         for email in emails:
-            email = self.gmail.get_email(email['id'])
+            print(f"Processing email: {email[0]}")
+            self.execute_automation(email)
 
-            # Passing email headers as dict to make it easy to access the data we need for now
-            email_headers_dict = {i['name']: i['value'] for i in email['payload']['headers']}
-            self.execute_automation(email, email_headers_dict)
-
-    def execute_automation(self, email, email_headers_dict):
+    def execute_automation(self, email):
         conditional_predicate = self.rule['conditional_predicate']
         trigger_action = False
         for condition in self.rule['conditions']:
-            is_condition_matched = self.check_single_condition(email, email_headers_dict, condition)
+            is_condition_matched = self.check_single_condition(email, condition)
             if conditional_predicate == 'ANY':
                 if not is_condition_matched:
                     continue
@@ -91,21 +84,22 @@ class AutomationUtils:
                 trigger_action = True
 
         if not trigger_action:
-            print(f'Condition not matched for email: {email["id"]}, subject: {email_headers_dict["Subject"]}')
+            print(f"Condition not matched for email: {email[1]}")
             return
 
-        print(f"Condition matched for email: {email['id']}, subject: {email_headers_dict['Subject']} \n Triggering actions")
+        print(f"Condition matched for email: {email[1]}, \n Triggering actions")
         self.trigger_actions(email)
-        print(f"Actions triggered for email: {email['id']}, subject: {email_headers_dict['Subject']}")
+        print(f"Actions triggered for email: {email[1]}")
 
-    def check_single_condition(self, email, email_headers_dict, condition):
+    def check_single_condition(self, email, condition):
         field = condition['field']
         predicate = condition['predicate']
         value = condition['value']
 
         self.validate_condition(field, predicate, value)
 
-        email_value = self.EMAIL_VALUE_MAP[field](email_headers_dict)
+        email_value = email[self.DB_FIELDS.index(field)]
+        print(f"Checking condition for email: {email[1]}, field: {field}, predicate: {predicate}, value: {value}, email_value: {email_value}")
         return self.PREDICATES_FUNC_MAP[predicate](value, email_value)
 
     def validate_condition(self, field, predicate, value):
@@ -124,15 +118,15 @@ class AutomationUtils:
 
     def trigger_actions(self, email):
         for action in self.rule['actions']:
-            self.trigger_action(email, action)
+            self.trigger_action(email[1], action)
 
-    def trigger_action(self, email, action):
+    def trigger_action(self, email_id, action):
         action_name = action['action']
         value = action['value']
 
         self.validate_action(action_name, value)
 
-        self.ACTION_VALUE_MAP[action_name](self.gmail, email['id'], value)
+        self.ACTION_VALUE_MAP[action_name](self.gmail, email_id, value)
 
     def validate_action(self, action_name, value):
         if action_name not in self.ACTION_LIST:

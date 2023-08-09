@@ -1,6 +1,7 @@
 import os
 import requests
 
+from dateutil.parser import parse
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -10,6 +11,14 @@ from googleapiclient.errors import HttpError
 
 class GmailApiUtils:
     LABELS_LIST = ['INBOX', 'UNREAD', 'IMPORTANT', 'SENT', 'DRAFT', 'SPAM', 'TRASH']
+    EMAIL_VALUE_MAP = {
+        'from': lambda email_headers_dict: email_headers_dict['From'],
+        'to': lambda email_headers_dict: email_headers_dict['To'],
+        'subject': lambda email_headers_dict: email_headers_dict['Subject'],
+        'date_received': lambda email_headers_dict: (parse(email_headers_dict['Date'], ignoretz=True).date()
+                                                     if 'Date' in email_headers_dict
+                                                     else parse(email_headers_dict['date'], ignoretz=True).date())
+    }
 
     def __init__(self):
         self.service = self.authenticate(['https://www.googleapis.com/auth/gmail.modify'])
@@ -42,7 +51,7 @@ class GmailApiUtils:
             print(f'Error occurred in authenticate: {error}')
             return None
 
-    def fetch_emails(self, labelIds=[]):
+    def fetch_emails(self, labelIds=['INBOX']):
         emails = self.messages.list(userId='me', labelIds=labelIds).execute()
         return emails['messages']
 
