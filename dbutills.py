@@ -1,13 +1,19 @@
 import psycopg2
+from constants import (
+    DB_HOST,
+    DB_NAME,
+    DB_PASS,
+    DB_USER
+)
 
 
 class DatabaseUtils:
-    def __init__(self, host, database, user, password):
+    def __init__(self):
         self.conn = psycopg2.connect(
-            host=host,
-            database=database,
-            user=user,
-            password=password
+            host=DB_HOST,
+            database=DB_NAME,
+            user=DB_USER,
+            password=DB_PASS,
         )
         self.cur = self.conn.cursor()
 
@@ -20,20 +26,20 @@ class DatabaseUtils:
                 subject VARCHAR(255) NOT NULL,
                 from_email VARCHAR(255) NOT NULL,
                 to_email VARCHAR(255) NOT NULL,
-                received_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                date_received TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """
         )
         self.conn.commit()
 
-    def insert_email_message(self, gmail_id, subject, from_email, to_email, received_date):
+    def insert_email_message(self, gmail_id, subject, from_email, to_email, date_received):
         try:
             self.cur.execute(
                 """
-                INSERT INTO email_message (gmail_id, subject, from_email, to_email, received_date)
+                INSERT INTO email_message (gmail_id, subject, from_email, to_email, date_received)
                 VALUES (%s, %s, %s, %s, %s)
                 """,
-                (gmail_id, subject, from_email, to_email, received_date)
+                (gmail_id, subject, from_email, to_email, date_received)
             )
             self.conn.commit()
             return True
@@ -41,15 +47,15 @@ class DatabaseUtils:
             print(f'Error while inserting email message: {e}')
             return False
 
-    def update_email_message(self, gmail_id, subject, from_email, to_email, received_date):
+    def update_email_message(self, gmail_id, subject, from_email, to_email, date_received):
         try:
             self.cur.execute(
                 """
                 UPDATE email_message
-                SET subject = %s, from_email = %s, to_email = %s, received_date = %s
+                SET subject = %s, from_email = %s, to_email = %s, date_received = %s
                 WHERE gmail_id = %s
                 """,
-                (subject, from_email, to_email, received_date, gmail_id)
+                (subject, from_email, to_email, date_received, gmail_id)
             )
             self.conn.commit()
             return True
@@ -57,12 +63,12 @@ class DatabaseUtils:
             print(f'Error while updating email message: {e}')
             return False
 
-    def create_or_update_email_message(self, gmail_id, subject, from_email, to_email, received_date):
+    def create_or_update_email_message(self, gmail_id, subject, from_email, to_email, date_received):
         email_message = self.fetch_email_message(gmail_id)
         if email_message:
-            return self.update_email_message(gmail_id, subject, from_email, to_email, received_date)
+            return self.update_email_message(gmail_id, subject, from_email, to_email, date_received)
 
-        return self.insert_email_message(gmail_id, subject, from_email, to_email, received_date)
+        return self.insert_email_message(gmail_id, subject, from_email, to_email, date_received)
 
     def fetch_email_message(self, gmail_id):
         self.cur.execute(

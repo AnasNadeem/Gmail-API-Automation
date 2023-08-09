@@ -1,4 +1,4 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 
 
 class AutomationUtils:
@@ -44,8 +44,8 @@ class AutomationUtils:
         'not_contains': lambda value, email_value: value.lower() not in email_value.lower(),
         'equals': lambda value, email_value: value == email_value,
         'not_equals': lambda value, email_value: value != email_value,
-        'lte': lambda value, email_value: datetime.now(timezone.utc) - timedelta(days=value) <= email_value,
-        'gte': lambda value, email_value: datetime.now(timezone.utc) + timedelta(days=value) >= email_value,
+        'lte': lambda value, email_value: datetime.now() - timedelta(days=value) <= email_value,
+        'gte': lambda value, email_value: datetime.now() + timedelta(days=value) >= email_value,
     }
 
     ACTION_LIST = ['mark_as', 'move_to']
@@ -53,6 +53,8 @@ class AutomationUtils:
         'mark_as': lambda gmail, email_id, value: gmail.mark_label_via_api(email_id, value),
         'move_to': lambda gmail, email_id, value: gmail.move_email_via_api(email_id, value),
     }
+    # id, gmail_id, subject, from_email, to_email, date_received
+    DB_FIELDS = ['id', 'gmail_id', 'subject', 'from', 'to', 'date_received']
 
     def __init__(self, gmail, rule, db):
         self.gmail = gmail
@@ -61,6 +63,7 @@ class AutomationUtils:
 
     def process_automation(self, emails):
         for email in emails:
+            print(f"Processing email: {email[0]}")
             self.execute_automation(email)
 
     def execute_automation(self, email):
@@ -81,12 +84,12 @@ class AutomationUtils:
                 trigger_action = True
 
         if not trigger_action:
-            print(f"Condition not matched for email: {email['id']}")
+            print(f"Condition not matched for email: {email[1]}")
             return
 
-        print(f"Condition matched for email: {email['id']}, \n Triggering actions")
+        print(f"Condition matched for email: {email[1]}, \n Triggering actions")
         self.trigger_actions(email)
-        print(f"Actions triggered for email: {email['id']}")
+        print(f"Actions triggered for email: {email[1]}")
 
     def check_single_condition(self, email, condition):
         field = condition['field']
@@ -95,7 +98,8 @@ class AutomationUtils:
 
         self.validate_condition(field, predicate, value)
 
-        email_value = email.get(field, None)
+        email_value = email[self.DB_FIELDS.index(field)]
+        print(f"Checking condition for email: {email[1]}, field: {field}, predicate: {predicate}, value: {value}, email_value: {email_value}")
         return self.PREDICATES_FUNC_MAP[predicate](value, email_value)
 
     def validate_condition(self, field, predicate, value):
@@ -122,7 +126,7 @@ class AutomationUtils:
 
         self.validate_action(action_name, value)
 
-        self.ACTION_VALUE_MAP[action_name](self.gmail, email['id'], value)
+        self.ACTION_VALUE_MAP[action_name](self.gmail, email[1], value)
 
     def validate_action(self, action_name, value):
         if action_name not in self.ACTION_LIST:
