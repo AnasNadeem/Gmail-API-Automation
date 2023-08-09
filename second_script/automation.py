@@ -118,15 +118,15 @@ class AutomationUtils:
 
     def trigger_actions(self, email):
         for action in self.rule['actions']:
-            self.trigger_action(email, action)
+            self.trigger_action(email[1], action)
 
-    def trigger_action(self, email, action):
+    def trigger_action(self, email_id, action):
         action_name = action['action']
         value = action['value']
 
         self.validate_action(action_name, value)
 
-        self.ACTION_VALUE_MAP[action_name](self.gmail, email[1], value)
+        self.ACTION_VALUE_MAP[action_name](self.gmail, email_id, value)
 
     def validate_action(self, action_name, value):
         if action_name not in self.ACTION_LIST:
